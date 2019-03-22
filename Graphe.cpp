@@ -3,6 +3,8 @@
 #include <algorithm>
 #include "Graphe.h"
 
+#include <limits>
+
 using namespace std;
 
 
@@ -105,7 +107,7 @@ void Graphe::trouverCheminLePlusCourt() {
         cout << "Il existe un arc avec une valeur negative dans le graphe." << endl;
         cout << "On execute donc l\'algorithme de Bellman" << endl;
 
-        algorithmeBellman(0);
+        algorithmeBellman();
 
     } else {
 
@@ -127,11 +129,11 @@ void Graphe::trouverCheminLePlusCourt() {
         switch(choix) {
 
             case 1:
-                algorithmeDijkstra();
+                algorithmeDijkstra(0);
                 break;
 
             case 2:
-                algorithmeBellman(0);
+                algorithmeBellman();
                 break;
 
             default:
@@ -145,7 +147,51 @@ void Graphe::trouverCheminLePlusCourt() {
 
 }
 
-void Graphe::algorithmeBellman(int sommetDepart) {
+
+
+/*void Graphe::algorithmeBellman(int sommetDepart) {
+
+    vector<Arc> chemin;
+    vector<int> sommetsParcourus;
+
+    int sommetCourant = sommetDepart;
+
+    while(sommetsParcourus.size() != sommets.size()){
+
+        vector<pair<int, int>> poids;
+
+        for( Arc& a : arcs ) {
+
+            if(a.extremiteInitiale.retournerValeur() == sommetCourant && find(chemin.begin(), chemin.end(), a) == chemin.end()) {
+
+                poids.emplace_back(a.extremiteTerminale.retournerValeur(), a.valeur);
+            }
+        }
+
+        auto comparePairs = [](pair<int, int>& a, pair<int, int> & b) {
+            return a.second < b.second;
+        };
+
+        pair<int, int> poidsLePlusFaible = *min_element(poids.begin(), poids.end(), comparePairs);
+
+
+        chemin.push_back(*find_if(arcs.begin(), arcs.end(), [&poidsLePlusFaible, &sommetCourant](Arc& a) {
+            return (a.extremiteInitiale.retournerValeur() == sommetCourant && a.extremiteTerminale.retournerValeur() == poidsLePlusFaible.first);
+        }));
+
+        sommetsParcourus.push_back(sommetCourant);
+        sommetCourant = poidsLePlusFaible.first;
+    }
+
+    for(Arc a : chemin) {
+
+        cout << a.extremiteInitiale.retournerValeur() << " -- " <<  a.valeur <<  " --> " << a.extremiteTerminale.retournerValeur() << endl;
+    }
+
+}*/
+
+/*
+void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     vector<int> sommetsTraites;
 
@@ -215,14 +261,45 @@ void Graphe::algorithmeBellman(int sommetDepart) {
         // La ligne a ete remplie
         // Ajouter le sommet avec le poids le plus faible aux sommets traites
 
-        int sommetLePlusFaible = []() -> int { return 0; };
+        auto & wArray = weightArray[weightArray.size() - 1];
+        int min(0);
+        int minIndex(0);
+        bool firstValueAssigned(false);
+
+        for(int k = 0; k < wArray.size(); k++) {
+
+            if(!firstValueAssigned) {
+
+                if(calculated[k]) {
+
+                    firstValueAssigned = true;
+                    min = wArray[k];
+                    minIndex = k;
+                }
+
+            }
+
+            else {
+
+                if(wArray[k] < min) {
+                    min = wArray[k];
+                    minIndex = k;
+                }
+            }
+        }
+
+        long long int sommetLePlusFaible = minIndex;
+
+        cout << "Sommet le plus faible : " << sommetLePlusFaible << endl;
+
+        sommetsTraites.push_back(sommetLePlusFaible);
 
     }
 
 
     for(int i = 0; i < weightArray.size(); i++) {
 
-        for(int j = 0; j < sommetsTraites.size(); j) {
+        for(int j = 0; j < sommetsTraites.size(); j++) {
 
             cout << weightArray[i][j] << " ";
         }
@@ -232,8 +309,175 @@ void Graphe::algorithmeBellman(int sommetDepart) {
 
 
 }
+*/
 
-void Graphe::algorithmeDijkstra() {
+template <typename A, typename B>
+bool findPair(vector<pair<A,B>>& pairArray, pair<A,B>& pair1) {
+
+    bool result(false);
+    for_each(pairArray.begin(), pairArray.end(), [&pair1, &result](pair<A,B>& pair2) -> bool {
+
+        if(pair1.first == pair2.first && pair1.second == pair2.second)
+            result = true;
+    });
+
+    return result;
+
+}
+
+
+void Graphe::algorithmeDijkstra(int sommetDepart) {
+
+    TableauDijsktra tableauDijsktra;
+    vector<int> sommetsFixes;
+    vector<pair<int, int>> retenues;
+
+    // Initialisation
+
+    tableauDijsktra.emplace_back();
+    auto& premiereLigne = tableauDijsktra[0];
+
+    sommetsFixes.push_back(sommetDepart);
+
+    for( int i = 0; i < sommets.size(); i++ ) {
+
+        premiereLigne.emplace_back();
+
+        if(i == sommetDepart)
+            continue;
+
+        premiereLigne[i].first = std::numeric_limits<int>::max();
+        premiereLigne[i].second = 0;
+
+        for(Arc arc : arcs) {
+
+            if(arc.extremiteInitiale.retournerValeur() == sommetDepart && arc.extremiteTerminale.retournerValeur() == i) {
+
+                premiereLigne[i].first = arc.valeur;
+                premiereLigne[i].second = sommetDepart;
+            }
+        }
+    }
+
+
+    pair<int, int> min;
+    bool minInit(false);
+    int minIndex(0);
+
+    for( int k = 0; k < sommets.size(); k++ ){
+
+        if(find(sommetsFixes.begin(), sommetsFixes.end(), k) == sommetsFixes.end()){
+
+            if(!minInit) {
+                minInit = true;
+                min.first = premiereLigne[k].first;
+                min.second = premiereLigne[k].second;
+                minIndex = k;
+            }
+
+            else {
+
+                if( min.first > premiereLigne[k].first ) {
+
+                    min.first = premiereLigne[k].first;
+                    min.second = premiereLigne[k].second;
+                    minIndex = k;
+                }
+            }
+        }
+    }
+
+    retenues.emplace_back(min.first, min.second);
+    sommetsFixes.push_back(minIndex);
+
+    // Boucle
+
+    for(int j = 1; j < sommets.size(); j++) {
+
+        tableauDijsktra.emplace_back();
+        auto& derniereLigne = tableauDijsktra[tableauDijsktra.size() - 1];
+
+        for( int i = 0; i < sommets.size(); i++ ) {
+
+            derniereLigne.emplace_back();
+
+            if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end())
+                continue;
+
+            int dernierSommetFixe = sommetsFixes[sommetsFixes.size() - 1];
+
+            derniereLigne[i].first = tableauDijsktra[tableauDijsktra.size() - 2][i].first;
+            derniereLigne[i].second = tableauDijsktra[tableauDijsktra.size() - 2][i].second;
+
+            for(Arc arc : arcs) {
+
+                if(arc.extremiteInitiale.retournerValeur() == dernierSommetFixe && arc.extremiteTerminale.retournerValeur() == i) {
+
+                    derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
+                    derniereLigne[i].second = dernierSommetFixe;
+                }
+            }
+        }
+
+
+        minInit = false;
+        minIndex = 0;
+
+        for( int k = 0; k < sommets.size(); k++ ){
+
+            if(find(sommetsFixes.begin(), sommetsFixes.end(), k) == sommetsFixes.end()){
+
+                if(!minInit) {
+                    minInit = true;
+                    min.first = derniereLigne[k].first;
+                    min.second = derniereLigne[k].second;
+                    minIndex = k;
+                }
+
+                else {
+
+                    if( min.first > derniereLigne[k].first ) {
+
+                        min.first = derniereLigne[k].first;
+                        min.second = derniereLigne[k].second;
+                        minIndex = k;
+                    }
+                }
+            }
+        }
+
+        if(!findPair(retenues, min)) {
+            retenues.emplace_back(min.first, min.second);
+        }
+
+        if(find(sommetsFixes.begin(), sommetsFixes.end(), minIndex) == sommetsFixes.end()) {
+            sommetsFixes.push_back(minIndex);
+        }
+
+    }
+
+
+    for(auto it : sommetsFixes){
+        cout << it << endl;
+    }
+
+    cout << endl << endl;
+
+
+    for( int i = 0; i < sommets.size(); i++ ) {
+
+        for( int j = 0; j < sommets.size(); j++ ) {
+
+            cout << tableauDijsktra[i][j].first << "(" << tableauDijsktra[i][j].second << ") ";
+        }
+
+        cout << endl;
+    }
+
+}
+
+
+void Graphe::algorithmeBellman() {
 
 }
 
