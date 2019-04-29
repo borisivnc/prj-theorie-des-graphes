@@ -5,9 +5,8 @@ int main() {
 
     Graphe g;
 
-    g.chargerDepuisFichier("graphe.txt");
-    //g.trouverCheminLePlusCourt();
-    g.afficher();
+    g.chargerDepuisFichier("exemple.txt");
+    g.trouverCheminLePlusCourt();
 
     return 0;
 
