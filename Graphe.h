@@ -54,6 +54,7 @@ public:
 
     void trouverCheminLePlusCourt();
 
+
 private:
 
     // Variables
@@ -71,6 +72,8 @@ private:
     void algorithmeBellman(int sommetDepart);
 
     void algorithmeDijkstra(int sommetDepart);
+
+
 };
 
 typedef std::vector<std::vector<std::pair<int, int>>> TableauDijsktra;
