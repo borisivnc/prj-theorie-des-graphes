@@ -461,9 +461,10 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     }
 
+    cout << "Sommets fixes : " << endl;
 
     for(auto it : sommetsFixes){
-        cout << it << "lol"<< endl;
+        cout << it << " ";
     }
 
     cout << endl << endl;
@@ -473,42 +474,24 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
 
         for( int j = 0; j < sommets.size(); j++ ) {
-            if(tableauDijsktra[i][j].first == 2147483647)
-             {cout << " +   " ;}
 
-            else if ( i>0 && tableauDijsktra[i][j].first != 0 && tableauDijsktra[i][j].first < tableauDijsktra[i-1][j].first && tableauDijsktra[i+1][j].first != 0 && tableauDijsktra[i-1][j].first != 2147483647 ) {
+            if(tableauDijsktra[i][j].first == std::numeric_limits<int>::max())
+                 cout << " +   " ;
 
-                //auto prem = tableauDijsktra[i+1][j].first ;
-                //auto sec = tableauDijsktra[i+1][j].second ;
+            else {
 
-                //tableauDijsktra[i+1][j].first = prem ;
-                //tableauDijsktra[i+1][j].second = sec ;
-               // cout << prem <<"(" << sec << ") ";
-                cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+                if (i> 0 && tableauDijsktra[i][j].first == 0) {
 
+                    tableauDijsktra[i][j].first = tableauDijsktra[i-1][j].first ;
+                    tableauDijsktra[i][j].second = tableauDijsktra[i-1][j].second ;
+                }
+
+                if (i>= 1 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second )
+                    cout << "=  ";
+
+                else
+                    cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
             }
-
-            else if (i> 0 && tableauDijsktra[i][j].first == 0){
-
-                tableauDijsktra[i][j].first = tableauDijsktra[i-1][j].first ;
-                tableauDijsktra[i][j].second = tableauDijsktra[i-1][j].second ;
-                cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
-            }
-            else if (i> 1 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second ){
-
-                cout << "=  ";
-
-            }
-            else if (i> 1 && tableauDijsktra[i-1][j].first == '=' ){
-
-                cout << "=  ";
-
-            }
-
-            else
-                cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
-
-
 
         }
 
