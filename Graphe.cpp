@@ -4,6 +4,7 @@
 #include "Graphe.h"
 
 #include <limits>
+#include <cstring>
 
 using namespace std;
 
@@ -355,6 +356,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
                 premiereLigne[i].first = arc.valeur;
                 premiereLigne[i].second = sommetDepart;
+
+
             }
         }
     }
@@ -397,10 +400,10 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         tableauDijsktra.emplace_back();
         auto& derniereLigne = tableauDijsktra[tableauDijsktra.size() - 1];
 
+
         for( int i = 0; i < sommets.size(); i++ ) {
 
             derniereLigne.emplace_back();
-
             if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end())
                 continue;
 
@@ -409,12 +412,14 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
             derniereLigne[i].first = tableauDijsktra[tableauDijsktra.size() - 2][i].first;
             derniereLigne[i].second = tableauDijsktra[tableauDijsktra.size() - 2][i].second;
 
+
             for(Arc arc : arcs) {
 
                 if(arc.extremiteInitiale.retournerValeur() == dernierSommetFixe && arc.extremiteTerminale.retournerValeur() == i) {
 
                     derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
                     derniereLigne[i].second = dernierSommetFixe;
+
                 }
             }
         }
@@ -456,9 +461,10 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     }
 
+    cout << "Sommets fixes : " << endl;
 
     for(auto it : sommetsFixes){
-        cout << it << endl;
+        cout << it << " ";
     }
 
     cout << endl << endl;
@@ -466,9 +472,27 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     for( int i = 0; i < sommets.size(); i++ ) {
 
+
         for( int j = 0; j < sommets.size(); j++ ) {
 
-            cout << tableauDijsktra[i][j].first << "(" << tableauDijsktra[i][j].second << ") ";
+            if(tableauDijsktra[i][j].first == std::numeric_limits<int>::max())
+                cout << " +   " ;
+
+            else {
+
+                if (i> 0 && tableauDijsktra[i][j].first == 0) {
+
+                    tableauDijsktra[i][j].first = tableauDijsktra[i-1][j].first ;
+                    tableauDijsktra[i][j].second = tableauDijsktra[i-1][j].second ;
+                }
+
+                if (i>= 2 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first &&  tableauDijsktra[i-1][j].first == tableauDijsktra[i-2][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second && tableauDijsktra[i-1][j].second == tableauDijsktra[i-2][j].second )
+                    cout << "=  ";
+
+                else
+                    cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+            }
+
         }
 
         cout << endl;
@@ -479,6 +503,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
 void Graphe::algorithmeBellman() {
 
+    
 }
+
 
 
