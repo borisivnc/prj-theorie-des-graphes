@@ -4,6 +4,7 @@
 #include "Graphe.h"
 
 #include <limits>
+#include <cstring>
 
 using namespace std;
 
@@ -85,6 +86,99 @@ void Graphe::afficher() {
 
     }
 
+    cout << endl << endl;
+
+    if(!tableauResultat.empty()) {
+
+        std::vector<unsigned long long int> maxParColonne;
+
+        unsigned long long int tmp(0);
+
+        for(i = 0; i < tableauResultat[0].size(); i++) {
+
+            maxParColonne.emplace_back(0);
+
+            for (int j = 0; j < tableauResultat.size(); j++) {
+
+                tmp = tableauResultat[j][i].size();
+
+                if(tmp > maxParColonne[i])
+                    maxParColonne[i] = tmp;
+            }
+        }
+
+        for(unsigned int I = 0; I < tableauResultat.size() * 2; I++) {
+
+            i = I / 2;
+
+            if(I % 2 == 0) {
+
+                for (int j = 0; j < tableauResultat[i].size(); j++) {
+
+                    unsigned long long int espaces = maxParColonne[j] + 2;
+
+                    if(j == 0)
+                        cout << '+';
+
+                    for (int k = 0; k < espaces; ++k)
+                        cout << '-';
+
+                    cout << '+';
+
+                }
+
+            }
+
+            else {
+
+                for(int j = 0; j < tableauResultat[i].size(); j++) {
+
+                    unsigned long long int espaces = maxParColonne[j] + 2 - tableauResultat[i][j].size();
+
+                    if(j == 0)
+                        cout << '|';
+
+                    if(tableauResultat[i][j].size() % 2 != 0) {
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            cout << " ";
+                        }
+
+                        cout << tableauResultat[i][j];
+
+                        for (int k = 0; k < (espaces / 2) + 1; ++k) {
+                            cout << " ";
+                        }
+
+
+                    }
+
+                    else {
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            cout << " ";
+                        }
+
+                        cout << tableauResultat[i][j];
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            cout << " ";
+                        }
+                    }
+
+
+                    cout << '|';
+                }
+            }
+
+
+
+
+
+            cout << endl;
+        }
+    }
+
 }
 
 void Graphe::trouverCheminLePlusCourt() {
@@ -105,6 +199,7 @@ void Graphe::trouverCheminLePlusCourt() {
     if( valeurNegative ){
 
         cout << "Il existe un arc avec une valeur negative dans le graphe." << endl;
+        cout << "Algorithme de Djisktra non applicable car circuit absorbant." << endl;
         cout << "On execute donc l\'algorithme de Bellman" << endl;
 
         algorithmeBellman();
@@ -326,6 +421,8 @@ bool findPair(vector<pair<A,B>>& pairArray, pair<A,B>& pair1) {
 }
 
 
+
+
 void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     TableauDijsktra tableauDijsktra;
@@ -355,6 +452,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
                 premiereLigne[i].first = arc.valeur;
                 premiereLigne[i].second = sommetDepart;
+
+
             }
         }
     }
@@ -397,10 +496,10 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         tableauDijsktra.emplace_back();
         auto& derniereLigne = tableauDijsktra[tableauDijsktra.size() - 1];
 
+
         for( int i = 0; i < sommets.size(); i++ ) {
 
             derniereLigne.emplace_back();
-
             if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end())
                 continue;
 
@@ -409,12 +508,14 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
             derniereLigne[i].first = tableauDijsktra[tableauDijsktra.size() - 2][i].first;
             derniereLigne[i].second = tableauDijsktra[tableauDijsktra.size() - 2][i].second;
 
+
             for(Arc arc : arcs) {
 
                 if(arc.extremiteInitiale.retournerValeur() == dernierSommetFixe && arc.extremiteTerminale.retournerValeur() == i) {
 
                     derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
                     derniereLigne[i].second = dernierSommetFixe;
+
                 }
             }
         }
@@ -456,9 +557,10 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     }
 
+    cout << "Sommets fixes : " << endl;
 
     for(auto it : sommetsFixes){
-        cout << it << endl;
+        cout << it << " ";
     }
 
     cout << endl << endl;
@@ -466,9 +568,41 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     for( int i = 0; i < sommets.size(); i++ ) {
 
+        tableauResultat.emplace_back();
+
         for( int j = 0; j < sommets.size(); j++ ) {
 
-            cout << tableauDijsktra[i][j].first << "(" << tableauDijsktra[i][j].second << ") ";
+            tableauResultat[i].emplace_back();
+
+            if(tableauDijsktra[i][j].first == std::numeric_limits<int>::max())
+                 tableauResultat[i][j] = "+";
+                //cout << "+   " ;
+
+            else {
+
+                if (i> 0 && tableauDijsktra[i][j].first == 0) {
+
+                    tableauDijsktra[i][j].first = tableauDijsktra[i-1][j].first ;
+                    tableauDijsktra[i][j].second = tableauDijsktra[i-1][j].second ;
+                }
+
+                if (i >= 2 &&
+                    tableauDijsktra[i][j].first == tableauDijsktra[i - 1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i - 1][j].second &&
+                    tableauDijsktra[i - 1][j].first == tableauDijsktra[i - 2][j].first && tableauDijsktra[i - 1][j].second == tableauDijsktra[i - 2][j].second)
+                    tableauResultat[i][j] = "=";
+                    //cout << "=  ";
+
+                else {
+                    stringstream ss;
+
+                    ss << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+
+                    tableauResultat[i][j] = ss.str();
+
+                    //cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+                }
+            }
+
         }
 
         cout << endl;
@@ -479,6 +613,32 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
 void Graphe::algorithmeBellman() {
 
+    //if (tableauDijsktra[i-1][j].first != 0 || tableauDijsktra[i][j].first == 0  ){
+    //    cout << tableauDijsktra[i-1][j].first << "(" << tableauDijsktra[i-1][j].second << ") ";
+
+    /*else if (tableauDijsktra[i][j].first != 0 && tableauDijsktra[i][j].second != tableauDijsktra[i+1][j].second ) {
+
+        auto prem = tableauDijsktra[i][j].first ;
+        auto sec = tableauDijsktra[i+1][j].second ;
+
+        tableauDijsktra[i+1][j].first = prem ;
+
+        cout << prem <<"(" << sec << ") ";
+
+    }*/
+    //}
 }
 
+
+    /*else if (i> 1 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second ){
+        /*
+      do{
+          cout << " =  ";
+      }  while (tableauDijsktra[i-1][j].first != '=' ) ;
+
+        tableauDijsktra[i][j].first = '=';
+        cout << tableauDijsktra[i][j].first ;
+
+    }
+    */
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 class Sommet {
 
@@ -54,12 +55,15 @@ public:
 
     void trouverCheminLePlusCourt();
 
+
 private:
 
     // Variables
 
     std::vector<Sommet> sommets;
     std::vector<Arc> arcs;
+
+    std::vector<std::vector<std::string>> tableauResultat;
 
     // Méthodes privées
 
@@ -71,6 +75,8 @@ private:
     void algorithmeBellman(int sommetDepart);
 
     void algorithmeDijkstra(int sommetDepart);
+
+
 };
 
 typedef std::vector<std::vector<std::pair<int, int>>> TableauDijsktra;
