@@ -476,7 +476,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         for( int j = 0; j < sommets.size(); j++ ) {
 
             if(tableauDijsktra[i][j].first == std::numeric_limits<int>::max())
-                 cout << " +   " ;
+                cout << " +   " ;
 
             else {
 
@@ -486,7 +486,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
                     tableauDijsktra[i][j].second = tableauDijsktra[i-1][j].second ;
                 }
 
-                if (i>= 1 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second )
+                if (i>= 2 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first &&  tableauDijsktra[i-1][j].first == tableauDijsktra[i-2][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second && tableauDijsktra[i-1][j].second == tableauDijsktra[i-2][j].second )
                     cout << "=  ";
 
                 else
@@ -503,32 +503,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
 void Graphe::algorithmeBellman() {
 
-    //if (tableauDijsktra[i-1][j].first != 0 || tableauDijsktra[i][j].first == 0  ){
-    //    cout << tableauDijsktra[i-1][j].first << "(" << tableauDijsktra[i-1][j].second << ") ";
-
-    /*else if (tableauDijsktra[i][j].first != 0 && tableauDijsktra[i][j].second != tableauDijsktra[i+1][j].second ) {
-
-        auto prem = tableauDijsktra[i][j].first ;
-        auto sec = tableauDijsktra[i+1][j].second ;
-
-        tableauDijsktra[i+1][j].first = prem ;
-
-        cout << prem <<"(" << sec << ") ";
-
-    }*/
-    //}
+    
 }
 
 
-    /*else if (i> 1 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second ){
-        /*
-      do{
-          cout << " =  ";
-      }  while (tableauDijsktra[i-1][j].first != '=' ) ;
-
-        tableauDijsktra[i][j].first = '=';
-        cout << tableauDijsktra[i][j].first ;
-
-    }
-    */
 
