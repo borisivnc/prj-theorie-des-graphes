@@ -38,6 +38,12 @@ bool Arc::operator==(const Arc &rhs) const {
 
 void Graphe::chargerDepuisFichier(std::string cheminFichier) {
 
+    size_t found = cheminFichier.find_last_of("-");
+    numeroGraphe = cheminFichier.substr(found+1);
+    size_t found2 = numeroGraphe.find_last_of(".");
+    numeroGraphe = numeroGraphe.substr(0,found2);
+
+
     ifstream fichier(cheminFichier.c_str(), ios::in);
 
     if (!fichier)
@@ -86,7 +92,213 @@ void Graphe::afficher() {
 
     }
 
+    cout << endl << endl;
+
+    if(!tableauResultat.empty()) {
+
+        std::vector<unsigned long long int> maxParColonne;
+
+        unsigned long long int tmp(0);
+
+        for(i = 0; i < tableauResultat[0].size(); i++) {
+
+            maxParColonne.emplace_back(0);
+
+            for (int j = 0; j < tableauResultat.size(); j++) {
+
+                tmp = tableauResultat[j][i].size();
+
+                if(tmp > maxParColonne[i])
+                    maxParColonne[i] = tmp;
+            }
+        }
+
+        for(unsigned int I = 0; I < tableauResultat.size() * 2; I++) {
+
+            i = I / 2;
+
+            if(I % 2 == 0) {
+
+//                for (int j = 0; j < tableauResultat[i].size(); j++) {
+//
+//                    unsigned long long int espaces = maxParColonne[j] + 2;
+//
+//                    if(j == 0)
+//                        cout << '+';
+//
+//                    for (int k = 0; k < espaces; ++k)
+//                        cout << '-';
+//
+//                    cout << '+';
+//
+//                }
+
+            }
+
+            else {
+
+                for(int j = 0; j < tableauResultat[i].size(); j++) {
+
+                    unsigned long long int espaces = maxParColonne[j] + 2 - tableauResultat[i][j].size();
+
+                    if(j == 0)
+                        cout << '|';
+
+                    if(tableauResultat[i][j].size() % 2 != 0) {
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            cout << " ";
+                        }
+
+                        cout << tableauResultat[i][j];
+
+                        for (int k = 0; k < (espaces / 2) + 1; ++k) {
+                            cout << " ";
+                        }
+
+
+                    }
+
+                    else {
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            cout << " ";
+                        }
+
+                        cout << tableauResultat[i][j];
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            cout << " ";
+                        }
+                    }
+
+
+                    cout << '|';
+                }
+            }
+
+
+
+
+            if(I % 2 != 0)
+                cout << endl;
+        }
+    }
+
 }
+
+void Graphe::saveInFile(int sommetDepart ) {
+
+    stringstream ss ;
+
+    ss << "L3-F4-trace"<< numeroGraphe<<"_"<< sommetDepart <<".txt" ;
+
+    ofstream myfile(ss.str().c_str());
+
+    if (myfile.is_open()){
+
+
+        unsigned int i;
+
+    for (i = 0; i < arcs.size(); i++) {
+
+        myfile  << arcs[i].extremiteInitiale.retournerValeur() << " -- " << arcs[i].valeur << " --> "
+             << arcs[i].extremiteTerminale.retournerValeur() << endl;
+
+    }
+
+        myfile  << endl << endl;
+
+    if (!tableauResultat.empty()) {
+
+        std::vector<unsigned long long int> maxParColonne;
+
+        unsigned long long int tmp(0);
+
+        for (i = 0; i < tableauResultat[0].size(); i++) {
+
+            maxParColonne.emplace_back(0);
+
+            for (int j = 0; j < tableauResultat.size(); j++) {
+
+                tmp = tableauResultat[j][i].size();
+
+                if (tmp > maxParColonne[i])
+                    maxParColonne[i] = tmp;
+            }
+        }
+
+        for (unsigned int I = 0; I < tableauResultat.size() * 2; I++) {
+
+            i = I / 2;
+
+            if (I % 2 == 0) {
+
+//                for (int j = 0; j < tableauResultat[i].size(); j++) {
+//
+//                    unsigned long long int espaces = maxParColonne[j] + 2;
+//
+//                    if(j == 0)
+//                        cout << '+';
+//
+//                    for (int k = 0; k < espaces; ++k)
+//                        cout << '-';
+//
+//                    cout << '+';
+//
+//                }
+
+            } else {
+
+                for (int j = 0; j < tableauResultat[i].size(); j++) {
+
+                    unsigned long long int espaces = maxParColonne[j] + 2 - tableauResultat[i][j].size();
+
+                    if (j == 0)
+                        myfile  << '|';
+
+                    if (tableauResultat[i][j].size() % 2 != 0) {
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            myfile  << " ";
+                        }
+
+                        myfile  << tableauResultat[i][j];
+
+                        for (int k = 0; k < (espaces / 2) + 1; ++k) {
+                            myfile  << " ";
+                        }
+
+
+                    } else {
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            myfile  << " ";
+                        }
+
+                        myfile  << tableauResultat[i][j];
+
+                        for (int k = 0; k < espaces / 2; ++k) {
+                            myfile  << " ";
+                        }
+                    }
+
+
+                    myfile  << '|';
+                }
+            }
+
+
+            if (I % 2 != 0)
+                myfile  << endl;
+        }
+    }
+    }
+    else
+        cout << "Unable to open file";
+
+}
+
 
 void Graphe::trouverCheminLePlusCourt() {
 
@@ -106,6 +318,7 @@ void Graphe::trouverCheminLePlusCourt() {
     if( valeurNegative ){
 
         cout << "Il existe un arc avec une valeur negative dans le graphe." << endl;
+        cout << "Algorithme de Djisktra non applicable car circuit absorbant." << endl;
         cout << "On execute donc l\'algorithme de Bellman" << endl;
 
         algorithmeBellman();
@@ -327,11 +540,15 @@ bool findPair(vector<pair<A,B>>& pairArray, pair<A,B>& pair1) {
 }
 
 
+
+
 void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     TableauDijsktra tableauDijsktra;
-    vector<int> sommetsFixes;
     vector<pair<int, int>> retenues;
+
+    sommetsFixes.clear();
+    tableauResultat.clear();
 
     // Initialisation
 
@@ -417,8 +634,20 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
                 if(arc.extremiteInitiale.retournerValeur() == dernierSommetFixe && arc.extremiteTerminale.retournerValeur() == i) {
 
-                    derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
-                    derniereLigne[i].second = dernierSommetFixe;
+                    if(j > 1) {
+
+                        if(arc.valeur + retenues[retenues.size() - 1].first < derniereLigne[i].first) {
+
+                            derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
+                            derniereLigne[i].second = dernierSommetFixe;
+                        }
+                    }
+
+                    else {
+
+                        derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
+                        derniereLigne[i].second = dernierSommetFixe;
+                    }
 
                 }
             }
@@ -470,13 +699,41 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
     cout << endl << endl;
 
 
+    tableauResultat.emplace_back();
+
+    for (int l = 0; l < sommets.size() + 1; ++l) {
+        stringstream ss;
+        ss << (l - 1);
+        if(l == 0)
+            tableauResultat[0].emplace_back(" ");
+        else
+            tableauResultat[0].emplace_back(ss.str());
+    }
+
+
     for( int i = 0; i < sommets.size(); i++ ) {
 
+        tableauResultat.emplace_back();
+
+        stringstream ss;
+
+        for (int k = 0; k <= i; ++k) {
+            ss << sommetsFixes[k];
+        }
+
+        //cout << "ss : \'" << ss.str() << "\'" << endl;
+
+        tableauResultat[i+1].emplace_back();
+
+        tableauResultat[i+1][0] = ss.str();
 
         for( int j = 0; j < sommets.size(); j++ ) {
 
+            tableauResultat[i+1].emplace_back();
+
             if(tableauDijsktra[i][j].first == std::numeric_limits<int>::max())
-                cout << " +   " ;
+                tableauResultat[i+1][j+1] = "+";
+                //cout << "+   " ;
 
             else {
 
@@ -486,11 +743,21 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
                     tableauDijsktra[i][j].second = tableauDijsktra[i-1][j].second ;
                 }
 
-                if (i>= 2 && tableauDijsktra[i][j].first == tableauDijsktra[i-1][j].first &&  tableauDijsktra[i-1][j].first == tableauDijsktra[i-2][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i-1][j].second && tableauDijsktra[i-1][j].second == tableauDijsktra[i-2][j].second )
-                    cout << "=  ";
+                if (i >= 2 &&
+                    tableauDijsktra[i][j].first == tableauDijsktra[i - 1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i - 1][j].second &&
+                    tableauDijsktra[i - 1][j].first == tableauDijsktra[i - 2][j].first && tableauDijsktra[i - 1][j].second == tableauDijsktra[i - 2][j].second)
+                    tableauResultat[i+1][j+1] = "=";
+                    //cout << "=  ";
 
-                else
-                    cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+                else {
+                    stringstream ss;
+
+                    ss << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+
+                    tableauResultat[i+1][j+1] = ss.str();
+
+                    //cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+                }
             }
 
         }
@@ -498,13 +765,14 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         cout << endl;
     }
 
+    saveInFile(sommetDepart);
 }
 
 
 void Graphe::algorithmeBellman() {
 
-    
 }
+
 
 
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 class Sommet {
 
@@ -52,6 +53,8 @@ public:
 
     void afficher();
 
+    void saveInFile(int sommetDepart);
+
     void trouverCheminLePlusCourt();
 
 
@@ -61,6 +64,11 @@ private:
 
     std::vector<Sommet> sommets;
     std::vector<Arc> arcs;
+    std::vector<int> sommetsFixes;
+
+    std::vector<std::vector<std::string>> tableauResultat;
+
+     std:: string numeroGraphe ;
 
     // Méthodes privées
 
@@ -77,6 +85,8 @@ private:
 };
 
 typedef std::vector<std::vector<std::pair<int, int>>> TableauDijsktra;
+
+
 
 
 #endif //GRAPHES_PJ_GRAPHE_H

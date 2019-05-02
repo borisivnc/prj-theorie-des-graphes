@@ -11,11 +11,11 @@ int main() {
 
 
 
-    g.chargerDepuisFichier("exemple.txt");
+    g.chargerDepuisFichier("L3-F4-6.txt");
 
     g.trouverCheminLePlusCourt();
 
-    //g.afficher();
+    g.afficher();
 
     return 0;
 
