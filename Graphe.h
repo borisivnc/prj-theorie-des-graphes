@@ -54,6 +54,7 @@ public:
 
     void trouverCheminLePlusCourt();
 
+    void matriceDAdjacence();
 
 private:
 
@@ -65,18 +66,17 @@ private:
     // Méthodes privées
 
     void algorithmeDijkstra();
-    void algorithmeBellman();
+    //void algorithmeBellman();
 
     void algorithmeDijkstra(int sommetDepart, int sommetArrivee);
 
     void algorithmeBellman(int sommetDepart);
 
     void algorithmeDijkstra(int sommetDepart);
-
-
 };
 
 typedef std::vector<std::vector<std::pair<int, int>>> TableauDijsktra;
+//typedef std::vector<std::vector<std::pair<int, int>>> Tableau;
 
 
 #endif //GRAPHES_PJ_GRAPHE_H

@@ -108,7 +108,7 @@ void Graphe::trouverCheminLePlusCourt() {
         cout << "Il existe un arc avec une valeur negative dans le graphe." << endl;
         cout << "On execute donc l\'algorithme de Bellman" << endl;
 
-        algorithmeBellman();
+        algorithmeBellman(0);
 
     } else {
 
@@ -134,7 +134,7 @@ void Graphe::trouverCheminLePlusCourt() {
                 break;
 
             case 2:
-                algorithmeBellman();
+                algorithmeBellman(0);
                 break;
 
             default:
@@ -151,104 +151,67 @@ void Graphe::trouverCheminLePlusCourt() {
 
 
 /*void Graphe::algorithmeBellman(int sommetDepart) {
-
     vector<Arc> chemin;
     vector<int> sommetsParcourus;
-
     int sommetCourant = sommetDepart;
-
     while(sommetsParcourus.size() != sommets.size()){
-
         vector<pair<int, int>> poids;
-
         for( Arc& a : arcs ) {
-
             if(a.extremiteInitiale.retournerValeur() == sommetCourant && find(chemin.begin(), chemin.end(), a) == chemin.end()) {
-
                 poids.emplace_back(a.extremiteTerminale.retournerValeur(), a.valeur);
             }
         }
-
         auto comparePairs = [](pair<int, int>& a, pair<int, int> & b) {
             return a.second < b.second;
         };
-
         pair<int, int> poidsLePlusFaible = *min_element(poids.begin(), poids.end(), comparePairs);
-
-
         chemin.push_back(*find_if(arcs.begin(), arcs.end(), [&poidsLePlusFaible, &sommetCourant](Arc& a) {
             return (a.extremiteInitiale.retournerValeur() == sommetCourant && a.extremiteTerminale.retournerValeur() == poidsLePlusFaible.first);
         }));
-
         sommetsParcourus.push_back(sommetCourant);
         sommetCourant = poidsLePlusFaible.first;
     }
-
     for(Arc a : chemin) {
-
         cout << a.extremiteInitiale.retournerValeur() << " -- " <<  a.valeur <<  " --> " << a.extremiteTerminale.retournerValeur() << endl;
     }
-
 }*/
 
 /*
 void Graphe::algorithmeDijkstra(int sommetDepart) {
-
     vector<int> sommetsTraites;
-
     unsigned long long int nbrSommets = sommets.size();
-
     vector<vector<int>> weightArray;
     vector<bool> calculated;
-
     sommetsTraites.push_back(sommetDepart);
-
     while(sommetsTraites.size() < nbrSommets) {
-
         weightArray.emplace_back();
         calculated.clear();
-
         for(int i = 0; i < nbrSommets; i++) {
-
             weightArray[weightArray.size() - 1].emplace_back(0);
             calculated.emplace_back(false);
         }
-
         for( int i = 0; i < nbrSommets; i++ ) {
-
             if(find(sommetsTraites.begin(), sommetsTraites.end(), i) == sommetsTraites.end()) {
-
                 if(weightArray.size() == 1) {
-
                     for(Arc arc : arcs) {
-
                         if(arc.extremiteInitiale.retournerValeur() == *(sommetsTraites.end() - 1) && arc.extremiteTerminale.retournerValeur() == i) {
-
                             weightArray[weightArray.size() - 1][i] = arc.valeur;
                             calculated[i] = true;
                             break;
                         }
                     }
                 }
-
                 else {
-
                     for(Arc arc : arcs) {
-
                         if(arc.extremiteInitiale.retournerValeur() == *(sommetsTraites.end() - 1) && arc.extremiteTerminale.retournerValeur() == i) {
-
                             weightArray[weightArray.size() - 1][i] = arc.valeur + weightArray[weightArray.size() - 2][i];
                             calculated[i] = true;
                             break;
                         }
                     }
-
                     if(!calculated[i]) {
-
                         for(int j = static_cast<int>(sommetsTraites.size() - 2); j > 0 && weightArray[weightArray.size() - 1][i] == 0; j--) {
-
                             if(weightArray[j][i] != 0) {
-
                                 weightArray[weightArray.size() - 1][i] = weightArray[j][i];
                                 calculated[i] = true;
                                 break;
@@ -258,57 +221,37 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
                 }
             }
         }
-
         // La ligne a ete remplie
         // Ajouter le sommet avec le poids le plus faible aux sommets traites
-
         auto & wArray = weightArray[weightArray.size() - 1];
         int min(0);
         int minIndex(0);
         bool firstValueAssigned(false);
-
         for(int k = 0; k < wArray.size(); k++) {
-
             if(!firstValueAssigned) {
-
                 if(calculated[k]) {
-
                     firstValueAssigned = true;
                     min = wArray[k];
                     minIndex = k;
                 }
-
             }
-
             else {
-
                 if(wArray[k] < min) {
                     min = wArray[k];
                     minIndex = k;
                 }
             }
         }
-
         long long int sommetLePlusFaible = minIndex;
-
         cout << "Sommet le plus faible : " << sommetLePlusFaible << endl;
-
         sommetsTraites.push_back(sommetLePlusFaible);
-
     }
-
-
     for(int i = 0; i < weightArray.size(); i++) {
-
         for(int j = 0; j < sommetsTraites.size(); j++) {
-
             cout << weightArray[i][j] << " ";
         }
-
         cout << endl;
     }
-
-
 }
 */
 
@@ -501,10 +444,98 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 }
 
 
-void Graphe::algorithmeBellman() {
+void Graphe::algorithmeBellman(int sommetDepart) {
+    bool afficher = true;
+    int sommePoidsAvant[sommets.size()];
+    int sommePoidsApres[sommets.size()];
+    string tabPoids[sommets.size()][sommets.size()];
 
-    
+    for (int i = 0; i < sommets.size(); i++) {
+        sommePoidsAvant[i] = INT_MAX;
+        sommePoidsApres[i] = INT_MAX;
+        tabPoids[1][i] = "+";
+    }
+    sommePoidsAvant[sommetDepart] = 0;
+    tabPoids[1][sommetDepart] = "0(" + to_string(sommetDepart)+ ")";
+
+
+    for (int k = 1; k <= sommets.size() - 1; k++) {
+
+        for (Arc arc : arcs) {
+            int sommetSrc = arc.extremiteInitiale.retournerValeur();
+            int sommetDest = arc.extremiteTerminale.retournerValeur();
+            int poidsArc = arc.valeur;
+
+            if (k == 1 && sommetSrc == sommetDepart){
+                sommePoidsAvant[sommetDest] = sommePoidsAvant[sommetSrc] + poidsArc;
+                tabPoids[k][sommetDest] = to_string(sommePoidsAvant[sommetDest]) + "(" + to_string(sommetSrc) + ")";
+            }else if(sommePoidsApres[sommetSrc] != INT_MAX && sommePoidsAvant[sommetSrc] + poidsArc < sommePoidsAvant[sommetDest]){
+                sommePoidsAvant[sommetDest] = sommePoidsAvant[sommetSrc] + poidsArc;
+                tabPoids[k][sommetDest] = to_string(sommePoidsAvant[sommetDest]) + "(" + to_string(sommetSrc) + ")";
+            }
+        }
+        for(int i = 0; i < arcs.size(); i++){
+            sommePoidsApres[i] = sommePoidsAvant[i];
+        }
+    }
+
+//    for (int k = 1; k <= sommets.size() - 1; k++) {
+//        for (int i = 0; k < sommets.size(); k++) {
+//            if (tabPoids[k][i].empty() || tabPoids[k][i] == " ")
+//                tabPoids[k][i] = tabPoids[k-1][i];
+//        }
+//    }
+
+    for (Arc arc : arcs) {
+        int sommetSrc = arc.extremiteInitiale.retournerValeur();
+        int sommetDest = arc.extremiteTerminale.retournerValeur();
+        if (sommePoidsApres[sommetSrc] != INT_MAX && sommePoidsApres[sommetDest] < 0) {
+            cout << "Ce graphe contient un circuit absorbant : " <<  sommetSrc << " -- " << sommePoidsApres[sommetDest] << " --> " << sommetDest << endl;
+            afficher = false;
+            exit(0);
+        }
+    }
+
+    if(afficher){
+        cout << "\t";
+        for (int i = 0; i < sommets.size(); i++){
+            cout << i << "\t";
+        }
+        cout <<endl;
+        for(int i = 1; i < sommets.size(); i++){
+            cout << "k=" << i << "\t";
+            for (int j = 0; j < sommets.size(); j++){
+                cout << tabPoids[i][j] << "\t";
+            }
+            cout << endl;
+        }
+    }
 }
 
+void Graphe::matriceDAdjacence() {
+    int tab[sommets.size()][sommets.size()];
 
+    for(Arc arc : arcs){
+        int sommetSrc = arc.extremiteInitiale.retournerValeur();
+        int sommetDest = arc.extremiteTerminale.retournerValeur();
+            tab[sommetSrc][sommetDest] = 1;
+    }
 
+    cout << "\t";
+    for (int i = 0; i < sommets.size(); i++){
+        cout << i << "\t";
+    }
+    cout << endl;
+
+    for (int i = 0; i < sommets.size(); i++){
+        cout << i << "\t";
+        for (int j = 0; j < sommets.size(); j++){
+            if(tab[i][j] == 1)
+                cout << tab[i][j] << "\t";
+            else
+                cout << "0\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
