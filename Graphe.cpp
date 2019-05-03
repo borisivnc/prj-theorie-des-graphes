@@ -36,15 +36,21 @@ bool Arc::operator==(const Arc &rhs) const {
            valeur == rhs.valeur;
 }
 
-void Graphe::chargerDepuisFichier(std::string cheminFichier) {
+void Graphe::chargerDepuisFichier(string numeroGraphe2) {
 
-    size_t found = cheminFichier.find_last_of("-");
-    numeroGraphe = cheminFichier.substr(found+1);
+    stringstream ss ;
+
+    ss << "L3-F4-"<< numeroGraphe2<<".txt" ;
+
+    numeroGraphe = numeroGraphe2 ;
+    
+    size_t found = ss.str().find_last_of("-");
+    numeroGraphe = ss.str().substr(found+1);
     size_t found2 = numeroGraphe.find_last_of(".");
     numeroGraphe = numeroGraphe.substr(0,found2);
 
 
-    ifstream fichier(cheminFichier.c_str(), ios::in);
+    ifstream fichier(ss.str(), ios::in);
 
     if (!fichier)
         return;
@@ -129,46 +135,57 @@ void Graphe::afficher() {
 //                    for (int k = 0; k < espaces; ++k)
 //                        cout << '-';
 //
-//                    cout << '+';
+                //cout << " ";
+
 //
 //                }
 
-            }
+           }
 
             else {
 
                 for(int j = 0; j < tableauResultat[i].size(); j++) {
 
-                    unsigned long long int espaces = maxParColonne[j] + 2 - tableauResultat[i][j].size();
+                    unsigned long long int espaces = maxParColonne[j] + 4 - tableauResultat[i][j].size();
 
                     if(j == 0)
                         cout << '|';
 
                     if(tableauResultat[i][j].size() % 2 != 0) {
 
-                        for (int k = 0; k < espaces / 2; ++k) {
+                        for (int k = 0; k < espaces / 2; k++) {
                             cout << " ";
                         }
 
                         cout << tableauResultat[i][j];
 
-                        for (int k = 0; k < (espaces / 2) + 1; ++k) {
+                        for (int k = 0; k < (espaces / 2)  ; k++) {
                             cout << " ";
                         }
+
 
 
                     }
 
                     else {
 
-                        for (int k = 0; k < espaces / 2; ++k) {
+                        for (int k = 0; k < espaces / 2; k++) {
                             cout << " ";
                         }
 
                         cout << tableauResultat[i][j];
 
-                        for (int k = 0; k < espaces / 2; ++k) {
+                        if(tableauResultat[i][j].size() > 2 ){
+
+                            for (int k = 0; k < espaces / 2 -1 ; k++) {
+                                cout << " ";
+                            }
+                        }
+                        else {
+                            for (int k = 0; k < espaces / 2 +1 ; k++) {
                             cout << " ";
+                            }
+
                         }
                     }
 
@@ -191,7 +208,7 @@ void Graphe::saveInFile(int sommetDepart ) {
 
     stringstream ss ;
 
-    ss << "L3-F4-trace"<< numeroGraphe<<"_"<< sommetDepart <<".txt" ;
+    ss << "L3-F4-trace"<< numeroGraphe <<"_"<< sommetDepart <<".txt" ;
 
     ofstream myfile(ss.str().c_str());
 
@@ -314,24 +331,31 @@ void Graphe::trouverCheminLePlusCourt() {
     }
 
     int choix = 0;
+    int leSommet = 0;
 
     if( valeurNegative ){
 
-        cout << "Il existe un arc avec une valeur negative dans le graphe." << endl;
-        cout << "Algorithme de Djisktra non applicable car circuit absorbant." << endl;
-        cout << "On execute donc l\'algorithme de Bellman" << endl;
+        cout << " Il existe un arc avec une valeur negative dans le graphe." << endl;
+        cout << " Algorithme de Djisktra non applicable car circuit absorbant." << endl;
+        cout << " On execute donc l\'algorithme de Bellman" << endl;
+        cout << " Donnez le sommet de départ"<<endl;
+        cin >> leSommet;
 
-        algorithmeBellman();
+        algorithmeBellman(leSommet);
 
     } else {
 
-        cout << "Pas de valeur negative dans les arcs du graphe." << endl;
+        cout << " Pas de valeur negative dans les arcs du graphe." << endl;
 
         while(choix != 1 && choix != 2) {
 
-            cout << "Quel algorithme souhaitez-vous executer ?" << endl;
-            cout << "1) Algorithme de Dijsktra" << endl;
-            cout << "2) Algorithme de Bellman" << endl;
+            cout << " Donnez le sommet de depart"<<endl;
+            cin>> leSommet ;
+
+
+            cout << " Quel algorithme souhaitez-vous executer ?" << endl;
+            cout << " 1) Algorithme de Dijsktra" << endl;
+            cout << " 2) Algorithme de Bellman" << endl;
 
             cin >> choix;
             cin.ignore(numeric_limits<streamsize>::max(),'\n');
@@ -343,14 +367,17 @@ void Graphe::trouverCheminLePlusCourt() {
         switch(choix) {
 
             case 1:
-                algorithmeDijkstra(0);
+
+                algorithmeDijkstra(leSommet);
                 break;
 
             case 2:
-                algorithmeBellman();
+
+                algorithmeBellman(leSommet);
                 break;
 
             default:
+                cout << " Erreur" <<endl;
                 break;
 
         }
@@ -690,14 +717,6 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     }
 
-    cout << "Sommets fixes : " << endl;
-
-    for(auto it : sommetsFixes){
-        cout << it << " ";
-    }
-
-    cout << endl << endl;
-
 
     tableauResultat.emplace_back();
 
@@ -721,7 +740,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
             ss << sommetsFixes[k];
         }
 
-        //cout << "ss : \'" << ss.str() << "\'" << endl;
+
 
         tableauResultat[i+1].emplace_back();
 
@@ -733,7 +752,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
             if(tableauDijsktra[i][j].first == std::numeric_limits<int>::max())
                 tableauResultat[i+1][j+1] = "+";
-                //cout << "+   " ;
+
 
             else {
 
@@ -747,7 +766,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
                     tableauDijsktra[i][j].first == tableauDijsktra[i - 1][j].first && tableauDijsktra[i][j].second == tableauDijsktra[i - 1][j].second &&
                     tableauDijsktra[i - 1][j].first == tableauDijsktra[i - 2][j].first && tableauDijsktra[i - 1][j].second == tableauDijsktra[i - 2][j].second)
                     tableauResultat[i+1][j+1] = "=";
-                    //cout << "=  ";
+
 
                 else {
                     stringstream ss;
@@ -756,7 +775,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
                     tableauResultat[i+1][j+1] = ss.str();
 
-                    //cout << tableauDijsktra[i][j].first <<"(" << tableauDijsktra[i][j].second << ") ";
+
                 }
             }
 
@@ -769,7 +788,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 }
 
 
-void Graphe::algorithmeBellman() {
+void Graphe::algorithmeBellman(int sommetDepart) {
 
 }
 

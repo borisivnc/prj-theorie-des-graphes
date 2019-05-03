@@ -49,7 +49,7 @@ public:
     ~Graphe() = default;
 
 
-    void chargerDepuisFichier(std::string cheminFichier);
+    void chargerDepuisFichier(std::string numeroGraphe2);
 
     void afficher();
 
@@ -75,7 +75,7 @@ private:
     void algorithmeDijkstra();
     void algorithmeBellman();
 
-    void algorithmeDijkstra(int sommetDepart, int sommetArrivee);
+
 
     void algorithmeBellman(int sommetDepart);
 
