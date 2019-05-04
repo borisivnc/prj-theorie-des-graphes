@@ -569,6 +569,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
     sommetsFixes.clear();
     tableauResultat.clear();
 
+    bool fini(false);
+
     // Initialisation
 
     tableauDijsktra.emplace_back();
@@ -629,24 +631,35 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
     retenues.emplace_back(min.first, min.second);
     sommetsFixes.push_back(minIndex);
 
+    unsigned long long int nbSommetsFixes = sommetsFixes.size() - 1;
+
     // Boucle
 
-    for(int j = 1; j < sommets.size(); j++) {
+    for(int j = 1; j < sommets.size() && !fini; j++) {
 
         tableauDijsktra.emplace_back();
         auto& derniereLigne = tableauDijsktra[tableauDijsktra.size() - 1];
 
+        if(nbSommetsFixes == sommetsFixes.size()) {
+            break;
+        }
+
+        else {
+            nbSommetsFixes = sommetsFixes.size();
+        }
 
         for( int i = 0; i < sommets.size(); i++ ) {
 
             derniereLigne.emplace_back();
-            if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end())
-                continue;
+
 
             int dernierSommetFixe = sommetsFixes[sommetsFixes.size() - 1];
 
             derniereLigne[i].first = tableauDijsktra[tableauDijsktra.size() - 2][i].first;
             derniereLigne[i].second = tableauDijsktra[tableauDijsktra.size() - 2][i].second;
+
+            if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end())
+                continue;
 
 
             for(Arc arc : arcs) {
@@ -670,15 +683,47 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
                 }
             }
+
         }
 
+        cout << "Ligne " << j + 1 << endl;
+        for (int n = 0; n < sommets.size(); ++n) {
+            cout << tableauDijsktra[j - 1][n].first << "(" << tableauDijsktra[j - 1][n].second << ") ";
+        }
+        cout << endl;
+
+
+//        // On vérifie si l'algorithme est fini
+//
+//        bool toutEstEgal(true);
+//
+//        for (int k = 0; k < sommets.size(); k++) {
+//            if((derniereLigne[k].first != tableauDijsktra[tableauDijsktra.size() - 2][k].first ||
+//                derniereLigne[k].second != tableauDijsktra[tableauDijsktra.size() - 2][k].second) &&
+//                (derniereLigne[k].first != 0 &&
+//                 derniereLigne[k].second != 0)) {
+//                toutEstEgal = false;
+//            }
+//        }
+//
+//        if(toutEstEgal) {
+//            fini = true;
+//
+//            for (int n = 0; n < sommets.size(); ++n) {
+//                cout << tableauDijsktra[j - 1][n].first << "(" << tableauDijsktra[j - 1][n].second << ") ";
+//            }
+//
+//            cout << endl;
+//            cout << "Fin ligne " << j << endl;
+//            continue;
+//        }
 
         minInit = false;
         minIndex = 0;
 
         for( int k = 0; k < sommets.size(); k++ ){
 
-            if(find(sommetsFixes.begin(), sommetsFixes.end(), k) == sommetsFixes.end()){
+            if(find(sommetsFixes.begin(), sommetsFixes.end(), k) == sommetsFixes.end() /*&& derniereLigne[k].second == sommetsFixes[sommetsFixes.size() - 1]*/){
 
                 if(!minInit) {
                     minInit = true;
@@ -699,6 +744,25 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
             }
         }
 
+        bool minValide(false);
+
+        for(Arc a : arcs) {
+            if(find(sommetsFixes.begin(), sommetsFixes.end(), a.extremiteInitiale.retournerValeur()) != sommetsFixes.end() &&
+               a.extremiteTerminale.retournerValeur() == minIndex) {
+                minValide = true;
+            }
+        }
+
+        if(!minValide) {
+            /*cout << endl << "--------------------" << endl << endl;
+
+            cout << "LE MINIMUM " << minIndex << " est invalide" << endl << endl;
+
+            cout << "--------------------" << endl << endl;*/
+
+            break;
+        }
+
         if(!findPair(retenues, min)) {
             retenues.emplace_back(min.first, min.second);
         }
@@ -709,6 +773,13 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     }
 
+    cout << "Sommets fixes : ";
+
+    for (int m = 0; m < sommetsFixes.size(); ++m) {
+        cout << sommetsFixes[m] << " ";
+    }
+
+    cout << endl;
 
     tableauResultat.emplace_back();
 
@@ -722,7 +793,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
     }
 
 
-    for( int i = 0; i < sommets.size(); i++ ) {
+    for( int i = 0; i < tableauDijsktra.size(); i++ ) {
 
         tableauResultat.emplace_back();
 
@@ -738,7 +809,7 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
         tableauResultat[i+1][0] = ss.str();
 
-        for( int j = 0; j < sommets.size(); j++ ) {
+        for( int j = 0; j < tableauDijsktra[i].size(); j++ ) {
 
             tableauResultat[i+1].emplace_back();
 
