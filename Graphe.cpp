@@ -43,7 +43,7 @@ void Graphe::chargerDepuisFichier(string numeroGraphe2) {
     ss << "L3-F4-"<< numeroGraphe2<<".txt" ;
 
     numeroGraphe = numeroGraphe2 ;
-    
+
     size_t found = ss.str().find_last_of("-");
     numeroGraphe = ss.str().substr(found+1);
     size_t found2 = numeroGraphe.find_last_of(".");
@@ -159,7 +159,7 @@ void Graphe::afficher() {
 
                         cout << tableauResultat[i][j];
 
-                        for (int k = 0; k < (espaces / 2)  ; k++) {
+                        for (int k = 0; k < (espaces / 2) +1  ; k++) {
                             cout << " ";
                         }
 
@@ -175,18 +175,10 @@ void Graphe::afficher() {
 
                         cout << tableauResultat[i][j];
 
-                        if(tableauResultat[i][j].size() > 2 ){
-
-                            for (int k = 0; k < espaces / 2 -1 ; k++) {
+                        for (int k = 0; k < espaces / 2  ; k++) {
                                 cout << " ";
                             }
-                        }
-                        else {
-                            for (int k = 0; k < espaces / 2 +1 ; k++) {
-                            cout << " ";
-                            }
 
-                        }
                     }
 
 
