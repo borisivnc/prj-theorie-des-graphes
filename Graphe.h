@@ -49,9 +49,11 @@ public:
     ~Graphe() = default;
 
 
-    void chargerDepuisFichier(std::string cheminFichier);
+    void chargerDepuisFichier(std::string numeroGraphe2);
 
     void afficher();
+
+    void saveInFile(int sommetDepart);
 
     void trouverCheminLePlusCourt();
 
@@ -62,15 +64,18 @@ private:
 
     std::vector<Sommet> sommets;
     std::vector<Arc> arcs;
+    std::vector<int> sommetsFixes;
 
     std::vector<std::vector<std::string>> tableauResultat;
+
+     std:: string numeroGraphe ;
 
     // Méthodes privées
 
     void algorithmeDijkstra();
     void algorithmeBellman();
 
-    void algorithmeDijkstra(int sommetDepart, int sommetArrivee);
+
 
     void algorithmeBellman(int sommetDepart);
 
@@ -80,6 +85,8 @@ private:
 };
 
 typedef std::vector<std::vector<std::pair<int, int>>> TableauDijsktra;
+
+
 
 
 #endif //GRAPHES_PJ_GRAPHE_H
