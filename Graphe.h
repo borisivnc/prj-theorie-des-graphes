@@ -7,6 +7,12 @@
 #include <fstream>
 #include <sstream>
 
+
+enum class Algorithme {
+    Dijkstra,
+    Bellman
+};
+
 class Sommet {
 
 public:
@@ -68,23 +74,21 @@ private:
 
     std::vector<std::vector<std::string>> tableauResultat;
 
-     std:: string numeroGraphe ;
+    std::string numeroGraphe;
+
+    Algorithme algorithmeUtilise;
 
     // Méthodes privées
-
-    void algorithmeDijkstra();
-    void algorithmeBellman();
-
 
 
     void algorithmeBellman(int sommetDepart);
 
     void algorithmeDijkstra(int sommetDepart);
 
-
+    void afficherMatriceDAdjacence(std::ostream &out);
 };
 
-typedef std::vector<std::vector<std::pair<int, int>>> TableauDijsktra;
+typedef std::vector<std::vector<std::pair<int, int>>> TableauDePaires;
 
 
 

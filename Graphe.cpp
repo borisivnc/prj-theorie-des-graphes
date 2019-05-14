@@ -5,6 +5,7 @@
 
 #include <limits>
 #include <cstring>
+#include <cmath>
 
 using namespace std;
 
@@ -36,24 +37,29 @@ bool Arc::operator==(const Arc &rhs) const {
            valeur == rhs.valeur;
 }
 
-void Graphe::chargerDepuisFichier(string numeroGraphe2) {
+void Graphe::chargerDepuisFichier(string numGraphe) {
 
     stringstream ss ;
 
-    ss << "L3-F4-" << numeroGraphe2 << ".txt" ;
+    ss << "L3-F4-" << numGraphe << ".txt" ;
 
-    numeroGraphe = numeroGraphe2 ;
+    size_t position_tiret = ss.str().find_last_of("-");
+    size_t position_point;
 
-    size_t found = ss.str().find_last_of("-");
-    numeroGraphe = ss.str().substr(found+1);
-    size_t found2 = numeroGraphe.find_last_of(".");
-    numeroGraphe = numeroGraphe.substr(0,found2);
+    numeroGraphe = ss.str().substr(position_tiret + 1);
 
+    position_point = numeroGraphe.find_last_of(".");
+
+    numeroGraphe = numeroGraphe.substr(0, position_point);
 
     ifstream fichier(ss.str(), ios::in);
 
-    if (!fichier)
+    if (!fichier) // Si le fichier n'a pas été ouvert
         return;
+
+    sommets.clear();
+    arcs.clear();
+    sommetsFixes.clear();
 
     int nombreSommets;
     int nombreArcs;
@@ -66,7 +72,7 @@ void Graphe::chargerDepuisFichier(string numeroGraphe2) {
 
     unsigned int i;
 
-    for(i = 0; i < nombreSommets; i++) {
+    for(i = 0; i < nombreSommets; i++) { // On remplit la liste de sommets
 
         sommets.emplace_back( i );
 
@@ -88,23 +94,17 @@ void Graphe::afficher() {
 
     cout << "Nombre de sommets : " << sommets.size() << endl;
     cout << "Nombre d\'arcs : " << arcs.size() << endl;
-    cout << endl;
+    cout << endl << endl;
 
     unsigned int i;
-
-    for(i = 0; i < arcs.size(); i++) {
-
-        cout << arcs[i].extremiteInitiale.retournerValeur() << " -- " << arcs[i].valeur << " --> " << arcs[i].extremiteTerminale.retournerValeur() << endl;
-
-    }
-
-    cout << endl << endl;
 
     if(!tableauResultat.empty()) {
 
         std::vector<unsigned long long int> maxParColonne;
 
         unsigned long long int tmp(0);
+
+        // On trouve la taille du tableau la plus grande afin d'afficher toutes les cases proportionnellement
 
         for(i = 0; i < tableauResultat[0].size(); i++) {
 
@@ -119,15 +119,17 @@ void Graphe::afficher() {
             }
         }
 
+        // On parcourt le tableau de résultat créé par un des algorithmes
+
         for(unsigned int I = 0; I < tableauResultat.size() * 2; I++) {
 
             i = I / 2;
 
-            if(I % 2 == 0) {
+            if(I % 2 == 0) { // Une ligne sur deux, on affiche une ligne du tableau...
 
                 for (int j = 0; j < tableauResultat[i].size(); j++) {
 
-                    unsigned long long int espaces = maxParColonne[j] + 4;
+                    unsigned long long int espaces = maxParColonne[j] + 4; // Taille d'une case du tableau
 
                     if(j == 0)
                         cout << '+';
@@ -144,9 +146,12 @@ void Graphe::afficher() {
 
            }
 
-            else {
+            else { //... et l'autre fois on affiche le contenu de ses cases
 
                 for(int j = 0; j < tableauResultat[i].size(); j++) {
+
+                    // Taille d'une case du tableau à laquelle on soustrait la taille du contenu de la case :
+                    // On obtient donc le nombre d'espaces à afficher autour du contenu de la case
 
                     unsigned long long int espaces = maxParColonne[j] + 4 - tableauResultat[i][j].size();
 
@@ -195,7 +200,7 @@ void Graphe::afficher() {
                 cout << endl;
         }
 
-        for (int j = 0; j < tableauResultat[i].size(); j++) {
+        for (int j = 0; j < tableauResultat[i].size(); j++) { // Affichage de la dernière ligne du tableau
 
             unsigned long long int espaces = maxParColonne[j] + 4;
 
@@ -210,117 +215,170 @@ void Graphe::afficher() {
 
         }
 
-        cout << endl;
+        cout << endl << endl;
+
+        afficherMatriceDAdjacence(cout);
     }
 
 }
 
-void Graphe::saveInFile(int sommetDepart ) {
+void Graphe::saveInFile(int sommetDepart) {
 
     stringstream ss ;
 
-    ss << "L3-F4-trace"<< numeroGraphe <<"_"<< sommetDepart <<".txt" ;
+    ss << "L3-F4-trace" << numeroGraphe << "_" << sommetDepart << ".txt" ;
 
-    ofstream myfile(ss.str().c_str());
+    ofstream file(ss.str().c_str());
 
-    if (myfile.is_open()){
+    if (file.is_open()){
 
+        file << "Nombre de sommets : " << sommets.size() << endl;
+        file << "Nombre d\'arcs : " << arcs.size() << endl;
+        file << endl << endl;
 
         unsigned int i;
 
-    for (i = 0; i < arcs.size(); i++) {
+        if(!tableauResultat.empty()) {
 
-        myfile  << arcs[i].extremiteInitiale.retournerValeur() << " -- " << arcs[i].valeur << " --> "
-             << arcs[i].extremiteTerminale.retournerValeur() << endl;
+            file << "Resultat de l\'algorithme de ";
 
-    }
+            switch (algorithmeUtilise) {
 
-        myfile  << endl << endl;
+                case Algorithme::Dijkstra:
 
-    if (!tableauResultat.empty()) {
+                    file << "Dijkstra :\n";
 
-        std::vector<unsigned long long int> maxParColonne;
+                    break;
 
-        unsigned long long int tmp(0);
+                case Algorithme::Bellman:
 
-        for (i = 0; i < tableauResultat[0].size(); i++) {
+                    file << "Bellman :\n";
 
-            maxParColonne.emplace_back(0);
+                    break;
 
-            for (int j = 0; j < tableauResultat.size(); j++) {
-
-                tmp = tableauResultat[j][i].size();
-
-                if (tmp > maxParColonne[i])
-                    maxParColonne[i] = tmp;
             }
-        }
 
-        for (unsigned int I = 0; I < tableauResultat.size() * 2; I++) {
+            file << endl;
 
-            i = I / 2;
+            std::vector<unsigned long long int> maxParColonne;
 
-            if (I % 2 == 0) {
+            unsigned long long int tmp(0);
 
-//                for (int j = 0; j < tableauResultat[i].size(); j++) {
-//
-//                    unsigned long long int espaces = maxParColonne[j] + 2;
-//
-//                    if(j == 0)
-//                        cout << '+';
-//
-//                    for (int k = 0; k < espaces; ++k)
-//                        cout << '-';
-//
-//                    cout << '+';
-//
-//                }
+            // On trouve la taille du tableau la plus grande afin d'afficher toutes les cases proportionnellement
 
-            } else {
+            for(i = 0; i < tableauResultat[0].size(); i++) {
 
-                for (int j = 0; j < tableauResultat[i].size(); j++) {
+                maxParColonne.emplace_back(0);
 
-                    unsigned long long int espaces = maxParColonne[j] + 2 - tableauResultat[i][j].size();
+                for (int j = 0; j < tableauResultat.size(); j++) {
 
-                    if (j == 0)
-                        myfile  << '|';
+                    tmp = tableauResultat[j][i].size();
 
-                    if (tableauResultat[i][j].size() % 2 != 0) {
-
-                        for (int k = 0; k < espaces / 2; ++k) {
-                            myfile  << " ";
-                        }
-
-                        myfile  << tableauResultat[i][j];
-
-                        for (int k = 0; k < (espaces / 2) + 1; ++k) {
-                            myfile  << " ";
-                        }
-
-
-                    } else {
-
-                        for (int k = 0; k < espaces / 2; ++k) {
-                            myfile  << " ";
-                        }
-
-                        myfile  << tableauResultat[i][j];
-
-                        for (int k = 0; k < espaces / 2; ++k) {
-                            myfile  << " ";
-                        }
-                    }
-
-
-                    myfile  << '|';
+                    if(tmp > maxParColonne[i])
+                        maxParColonne[i] = tmp;
                 }
             }
 
+            // On parcourt le tableau de résultat créé par un des algorithmes
 
-            if (I % 2 != 0)
-                myfile  << endl;
+            for(unsigned int I = 0; I < tableauResultat.size() * 2; I++) {
+
+                i = I / 2;
+
+                if(I % 2 == 0) { // Une ligne sur deux, on affiche une ligne du tableau...
+
+                    for (int j = 0; j < tableauResultat[i].size(); j++) {
+
+                        unsigned long long int espaces = maxParColonne[j] + 4; // Taille d'une case du tableau
+
+                        if(j == 0)
+                            file << '+';
+
+                        for (int k = 0; k < espaces; ++k)
+                            file << '-';
+
+                        file << "+";
+
+
+                    }
+
+                    file << endl;
+
+                }
+
+                else { //... et l'autre fois on affiche le contenu de ses cases
+
+                    for(int j = 0; j < tableauResultat[i].size(); j++) {
+
+                        // Taille d'une case du tableau à laquelle on soustrait la taille du contenu de la case :
+                        // On obtient donc le nombre d'espaces à afficher autour du contenu de la case
+
+                        unsigned long long int espaces = maxParColonne[j] + 4 - tableauResultat[i][j].size();
+
+                        if(j == 0)
+                            file << '|';
+
+                        if(espaces % 2 != 0) {
+
+                            for (int k = 0; k < espaces / 2; k++) {
+                                file << " ";
+                            }
+
+                            file << tableauResultat[i][j];
+
+                            for (int k = 0; k < (espaces / 2) +1  ; k++) {
+                                file << " ";
+                            }
+
+
+
+                        }
+
+                        else {
+
+                            for (int k = 0; k < espaces / 2; k++) {
+                                file << " ";
+                            }
+
+                            file << tableauResultat[i][j];
+
+                            for (int k = 0; k < espaces / 2  ; k++) {
+                                file << " ";
+                            }
+
+                        }
+
+
+                        file << '|';
+                    }
+                }
+
+
+
+
+                if(I % 2 != 0)
+                    file << endl;
+            }
+
+            for (int j = 0; j < tableauResultat[i].size(); j++) { // Affichage de la dernière ligne du tableau
+
+                unsigned long long int espaces = maxParColonne[j] + 4;
+
+                if(j == 0)
+                    file << '+';
+
+                for (int k = 0; k < espaces; ++k)
+                    file << '-';
+
+                file << "+";
+
+
+            }
+
+            file << endl << endl;
         }
-    }
+        
+        afficherMatriceDAdjacence(file);
     }
     else
         cout << "Unable to open file";
@@ -346,27 +404,26 @@ void Graphe::trouverCheminLePlusCourt() {
 
     if( valeurNegative ){
 
-        cout << " Il existe un arc avec une valeur negative dans le graphe." << endl;
-        cout << " Algorithme de Djisktra non applicable car circuit absorbant." << endl;
-        cout << " On execute donc l\'algorithme de Bellman" << endl;
-        cout << " Donnez le sommet de départ"<<endl;
+        cout << "Il existe un arc avec une valeur negative dans le graphe." << endl;
+        cout << "On execute donc l\'algorithme de Bellman" << endl;
+        cout << "Donnez le sommet de depart"<<endl;
         cin >> leSommet;
 
         algorithmeBellman(leSommet);
 
     } else {
 
-        cout << " Pas de valeur negative dans les arcs du graphe." << endl;
+        cout << "Pas de valeur negative dans les arcs du graphe." << endl;
 
         while(choix != 1 && choix != 2) {
 
-            cout << " Donnez le sommet de depart"<<endl;
+            cout << "Donnez le sommet de depart"<<endl;
             cin>> leSommet ;
 
 
-            cout << " Quel algorithme souhaitez-vous executer ?" << endl;
-            cout << " 1) Algorithme de Dijsktra" << endl;
-            cout << " 2) Algorithme de Bellman" << endl;
+            cout << "Quel algorithme souhaitez-vous executer ?" << endl;
+            cout << "1) Algorithme de Dijsktra" << endl;
+            cout << "2) Algorithme de Bellman" << endl;
 
             cin >> choix;
             cin.ignore(numeric_limits<streamsize>::max(),'\n');
@@ -388,7 +445,7 @@ void Graphe::trouverCheminLePlusCourt() {
                 break;
 
             default:
-                cout << " Erreur" <<endl;
+                cout << "Erreur" << endl;
                 break;
 
         }
@@ -417,7 +474,7 @@ bool findPair(vector<pair<A,B>>& pairArray, pair<A,B>& pair1) {
 
 void Graphe::algorithmeDijkstra(int sommetDepart) {
 
-    TableauDijsktra tableauDijsktra;
+    TableauDePaires tableauDijsktra; // Tableau dans lequel seront effectués les calculs
     vector<pair<int, int>> retenues;
 
     sommetsFixes.clear();
@@ -425,7 +482,9 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
     bool fini(false);
 
-    // Initialisation
+    algorithmeUtilise = Algorithme::Dijkstra;
+
+    // Initialisation & remplissage de la première ligne du tableau
 
     tableauDijsktra.emplace_back();
     auto& premiereLigne = tableauDijsktra[0];
@@ -439,10 +498,12 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         if(i == sommetDepart)
             continue;
 
-        premiereLigne[i].first = std::numeric_limits<int>::max();
+        premiereLigne[i].first = std::numeric_limits<int>::max(); // On initialise a +inf (ici inf est la limite d'un entier)
         premiereLigne[i].second = 0;
 
         for(Arc arc : arcs) {
+
+            // On initialise chaque case avec l'arc correspondant
 
             if(arc.extremiteInitiale.retournerValeur() == sommetDepart && arc.extremiteTerminale.retournerValeur() == i) {
 
@@ -458,6 +519,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
     pair<int, int> min;
     bool minInit(false);
     int minIndex(0);
+
+    // On trouve le minimum de la ligne
 
     for( int k = 0; k < sommets.size(); k++ ){
 
@@ -482,8 +545,24 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         }
     }
 
-    retenues.emplace_back(min.first, min.second);
-    sommetsFixes.push_back(minIndex);
+    bool minValide(false);
+
+    for(Arc a : arcs) {
+        if(find(sommetsFixes.begin(), sommetsFixes.end(), a.extremiteInitiale.retournerValeur()) != sommetsFixes.end() &&
+           a.extremiteTerminale.retournerValeur() == minIndex) {
+            minValide = true;
+        }
+    }
+
+    if(!minValide) {
+        fini = true;
+    }
+
+    else {
+
+        retenues.emplace_back(min.first, min.second);
+        sommetsFixes.push_back(minIndex); // On ajoute le sommet correspondant au minimum aux sommets fixés
+    }
 
     unsigned long long int nbSommetsFixes = sommetsFixes.size() - 1;
 
@@ -494,35 +573,38 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
         tableauDijsktra.emplace_back();
         auto& derniereLigne = tableauDijsktra[tableauDijsktra.size() - 1];
 
-        if(nbSommetsFixes == sommetsFixes.size()) {
-            break;
+        if(nbSommetsFixes == sommetsFixes.size()) { // Si l'on a pas ajouté de sommet depuis le dernier tour de boucle
+            break; // alors on quitte la boucle (algorithme fini)
         }
 
         else {
             nbSommetsFixes = sommetsFixes.size();
         }
 
-        for( int i = 0; i < sommets.size(); i++ ) {
+        for( int i = 0; i < sommets.size(); i++ ) { // Ajout et parcout des cases de la nouvelle ligne du tableau
 
             derniereLigne.emplace_back();
 
-
             int dernierSommetFixe = sommetsFixes[sommetsFixes.size() - 1];
+
+            // Par défaut la nouvelle ligne prend les valeurs de la ligne précédente
 
             derniereLigne[i].first = tableauDijsktra[tableauDijsktra.size() - 2][i].first;
             derniereLigne[i].second = tableauDijsktra[tableauDijsktra.size() - 2][i].second;
 
-            if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end())
+            if(find(sommetsFixes.begin(), sommetsFixes.end(), i) != sommetsFixes.end()) // Le sommet actuel a déja été fixé on saute ce tour de boucle
                 continue;
 
 
             for(Arc arc : arcs) {
 
+                // Si l'arc part du dernier sommet fixé et va vers le sommet de la case actuelle
+
                 if(arc.extremiteInitiale.retournerValeur() == dernierSommetFixe && arc.extremiteTerminale.retournerValeur() == i) {
 
-                    if(j > 1) {
+                    if(j > 1) { // Si on est au moins a la ligne 2
 
-                        if(arc.valeur + retenues[retenues.size() - 1].first < derniereLigne[i].first) {
+                        if(arc.valeur + retenues[retenues.size() - 1].first < derniereLigne[i].first) { // Si la valeur est moins élevée on la garde
 
                             derniereLigne[i].first = arc.valeur + retenues[retenues.size() - 1].first;
                             derniereLigne[i].second = dernierSommetFixe;
@@ -542,6 +624,8 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
         minInit = false;
         minIndex = 0;
+
+        // On trouve le minimum dans la ligne
 
         for( int k = 0; k < sommets.size(); k++ ){
 
@@ -583,11 +667,15 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
             retenues.emplace_back(min.first, min.second);
         }
 
+        // On ajoute le minimum trouvé aux sommets fixés
+
         if(find(sommetsFixes.begin(), sommetsFixes.end(), minIndex) == sommetsFixes.end()) {
             sommetsFixes.push_back(minIndex);
         }
 
     }
+
+    // On forme un tableau avec les résultats
 
     tableauResultat.emplace_back();
 
@@ -655,8 +743,206 @@ void Graphe::algorithmeDijkstra(int sommetDepart) {
 
 void Graphe::algorithmeBellman(int sommetDepart) {
 
+    TableauDePaires tableauBellman;
+
+    tableauResultat.clear();
+
+    algorithmeUtilise = Algorithme::Bellman;
+
+    int sommePoids(0);
+
+    for (Arc arc : arcs) {
+        sommePoids += arc.valeur;
+    }
+
+    if(sommePoids < 0) {
+        cout << "Le circuit est absorbant. On n\'execute donc pas l'algorithme de Bellman." << endl;
+        return;
+    }
+
+    // Initialisation
+
+    tableauBellman.emplace_back();
+
+    auto& premiereLigne = tableauBellman[0];
+
+    for (int i = 0; i < sommets.size(); ++i) {
+
+        premiereLigne.emplace_back();
+
+        auto& paire = premiereLigne[premiereLigne.size() - 1];
+
+        paire.first = std::numeric_limits<int>::max();
+        paire.second = 0;
+    }
+
+    premiereLigne[sommetDepart].first = 0;
+    premiereLigne[sommetDepart].second = 0;
+
+    // Boucle
+
+    for (int i = 1; i < sommets.size(); ++i) {
+
+        tableauBellman.emplace_back();
+
+        auto& derniereLigne = tableauBellman[tableauBellman.size() - 1];
+
+        for (int j = 0; j < sommets.size(); ++j) {
+
+            derniereLigne.emplace_back();
+
+            // La nouvelle ligne prend les valeurs de la ligne précédente par défaut
+
+            derniereLigne[j].first = tableauBellman[tableauBellman.size() - 2][j].first;
+            derniereLigne[j].second = tableauBellman[tableauBellman.size() - 2][j].second;
+
+            for(Arc arc : arcs) {
+
+                if(arc.extremiteTerminale.retournerValeur() == j) { // Si l'arc est en direction du sommet de la case actuelle du tableau
+
+                    // Si cet arc permet un chemin plus court vers ce sommet
+
+                    if(tableauBellman[tableauBellman.size() - 2][arc.extremiteInitiale.retournerValeur()].first !=  std::numeric_limits<int>::max() &&
+                       arc.valeur + tableauBellman[tableauBellman.size() - 2][arc.extremiteInitiale.retournerValeur()].first < derniereLigne[j].first) {
+
+                        derniereLigne[j].first = arc.valeur + tableauBellman[tableauBellman.size() - 2][arc.extremiteInitiale.retournerValeur()].first;
+                        derniereLigne[j].second = arc.extremiteInitiale.retournerValeur();
+                    }
+                }
+            }
+        }
+    }
+
+    // On forme le tableau de résultat
+
+    tableauResultat.emplace_back();
+
+    for (int l = 0; l < sommets.size() + 1; ++l) {
+        stringstream ss;
+        ss << (l - 1);
+        if(l == 0)
+            tableauResultat[0].emplace_back(" ");
+        else
+            tableauResultat[0].emplace_back(ss.str());
+    }
+
+
+    for( int i = 0; i < tableauBellman.size(); i++ ) {
+
+        tableauResultat.emplace_back();
+
+        stringstream ss;
+
+        ss << i + 1;
+
+        tableauResultat[i+1].emplace_back();
+
+        tableauResultat[i+1][0] = ss.str();
+
+        for( int j = 0; j < tableauBellman[i].size(); j++ ) {
+
+            tableauResultat[i+1].emplace_back();
+
+            if(tableauBellman[i][j].first == std::numeric_limits<int>::max())
+                tableauResultat[i+1][j+1] = "+";
+
+            else {
+
+                stringstream ss;
+
+                ss << tableauBellman[i][j].first <<"(" << tableauBellman[i][j].second << ") ";
+
+                tableauResultat[i+1][j+1] = ss.str();
+
+            }
+        }
+    }
+
+    saveInFile(sommetDepart);
 }
 
+
+void Graphe::afficherMatriceDAdjacence(ostream& out) {
+
+    int tab[sommets.size()][sommets.size()];
+
+    out << "Matrice d\'adjacence : " << endl << endl;
+
+
+    for (auto & ligne : tab)
+        for(auto& col : ligne)
+            col = 0;
+
+    for(Arc arc : arcs){
+        int sommetSrc = arc.extremiteInitiale.retournerValeur();
+        int sommetDest = arc.extremiteTerminale.retournerValeur();
+        tab[sommetSrc][sommetDest] = 1;
+    }
+
+    for (int j = 0; j <= sommets.size(); ++j) {
+
+        if(j == 0)
+            out << "+";
+
+        out << "-----+";
+    }
+
+    out << endl;
+
+    out << "|     |";
+
+    for (int i = 0; i < sommets.size(); i++){
+        out << "  " << i << "  |";
+    }
+
+    out << endl;
+
+    for (int I = 0; I < sommets.size() * 2; I++){
+
+        int i = I / 2;
+
+        if(I % 2 == 0) {
+
+            for (int j = 0; j <= sommets.size(); ++j) {
+
+                if(j == 0)
+                    out << "+";
+
+                out << "-----+";
+            }
+        }
+
+        else {
+
+            int l = static_cast<int>(log10(i));
+
+            if(l == 0 || i == 0) {
+                out << "|  " << i << "  |";
+            }
+
+            else if(l == 1) {
+                out << "| " << i << "  |";
+            }
+
+            for (int j = 0; j < sommets.size(); j++){
+
+                out << "  " << tab[i][j] << "  |";
+            }
+        }
+
+        out << endl;
+    }
+
+    for (int j = 0; j <= sommets.size(); ++j) {
+
+        if(j == 0)
+            out << "+";
+
+        out << "-----+";
+    }
+
+    out << endl;
+}
 
 
 
